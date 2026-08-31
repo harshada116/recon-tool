@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Web Application Recon Tool{% endblock %}</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-custom">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('index') }}">
+        recon<span class="accent">::</span>tool
+      </a>
+    </div>
+  </nav>
+
+  {% block content %}{% endblock %}
+
+  <footer>
+    <div class="container">
+      Web Application Recon Tool — passive collection of publicly available
+      information (WHOIS, DNS, TLS, HTTP, subdomains, robots/sitemap, tech
+      stack). Port scanning is opt-in and logged. For authorized use only.
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

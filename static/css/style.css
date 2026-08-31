@@ -1,0 +1,243 @@
+/* Security Header Analyzer — custom theme layered over Bootstrap 5.
+   Palette: deep slate background, cool cyan accent, monospace for
+   anything that is literally header/cookie data (so raw values read
+   as "data", distinct from prose). */
+
+:root {
+  --bg: #0d1117;
+  --panel: #131a24;
+  --panel-border: #232d3d;
+  --text: #d7dee8;
+  --text-dim: #8b97a8;
+  --accent: #3ecf8e;
+  --accent-dim: #235c45;
+  --high: #ef5350;
+  --medium: #f0a742;
+  --low: #4fa3e0;
+  --info: #6b7684;
+  --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Consolas, monospace;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+}
+
+.navbar-brand {
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.navbar-brand .accent { color: var(--accent); }
+
+.navbar-custom {
+  background: var(--panel);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.hero {
+  padding: 4rem 0 3rem;
+}
+.hero h1 {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.hero .lede {
+  color: var(--text-dim);
+  max-width: 620px;
+}
+
+.scan-form {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 2rem;
+}
+.scan-form .form-control {
+  background: #0a0f16;
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.95rem;
+}
+.scan-form .form-control:focus {
+  background: #0a0f16;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+  color: var(--text);
+}
+.btn-scan {
+  background: var(--accent);
+  border: none;
+  color: #0a1410;
+  font-weight: 600;
+  padding: 0.65rem 1.6rem;
+}
+.btn-scan:hover { background: #35b57c; color: #0a1410; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+}
+
+.grade-badge {
+  font-family: var(--mono);
+  font-size: 3rem;
+  font-weight: 700;
+  width: 5.5rem;
+  height: 5.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  line-height: 1;
+}
+.grade-A { background: #17352a; color: #3ecf8e; }
+.grade-B { background: #1c3320; color: #7fd858; }
+.grade-C { background: #3a3320; color: #f0a742; }
+.grade-D { background: #3a2620; color: #f08a42; }
+.grade-F { background: #3a1e1e; color: #ef5350; }
+
+.sev-pill {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+.sev-high { background: #3a1e1e; color: var(--high); }
+.sev-medium { background: #3a3320; color: var(--medium); }
+.sev-low { background: #16283a; color: var(--low); }
+.sev-info { background: #1c222b; color: var(--info); }
+
+.finding-card {
+  border-left: 3px solid var(--panel-border);
+  background: var(--panel);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.finding-card.high { border-left-color: var(--high); }
+.finding-card.medium { border-left-color: var(--medium); }
+.finding-card.low { border-left-color: var(--low); }
+.finding-card.info { border-left-color: var(--info); }
+
+.finding-title { font-weight: 600; }
+.finding-meta {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+.finding-remediation {
+  border-top: 1px dashed var(--panel-border);
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  font-size: 0.9rem;
+}
+.finding-remediation .label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.raw-value {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  background: #0a0f16;
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 0.5rem 0.7rem;
+  word-break: break-all;
+  color: var(--text-dim);
+}
+
+.module-status-ok { color: var(--accent); }
+.module-status-error { color: var(--high); }
+
+footer {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--panel-border);
+  padding: 2rem 0;
+  margin-top: 3rem;
+}
+
+.error-box {
+  background: #241416;
+  border: 1px solid #4a2226;
+  color: #f2b3b3;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+/* Recon-tool specific additions */
+.category-heading {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--panel-border);
+}
+.chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  background: #0a0f16;
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  margin: 0.15rem 0.25rem 0.15rem 0;
+}
+.chip.warn { border-color: var(--medium); color: var(--medium); }
+
+.progress-wrap {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 2.5rem;
+  text-align: center;
+}
+.progress-track {
+  background: #0a0f16;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+  margin: 1.25rem 0;
+}
+.progress-fill {
+  background: var(--accent);
+  height: 100%;
+  transition: width 0.4s ease;
+}
+.spinner-mono {
+  font-family: var(--mono);
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.kv-table {
+  width: 100%;
+  font-size: 0.9rem;
+}
+.kv-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--panel-border); vertical-align: top; }
+.kv-table td:first-child { color: var(--text-dim); width: 35%; font-family: var(--mono); font-size: 0.8rem; }
+
+.form-check-label { color: var(--text-dim); font-size: 0.9rem; }
+.authorize-box {
+  background: #241a10;
+  border: 1px solid #4a3820;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+}

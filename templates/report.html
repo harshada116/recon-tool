@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}Recon Profile — {{ report.target.hostname }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="d-flex flex-wrap justify-content-between align-items-start mt-4 mb-4 gap-3">
+    <div>
+      <div class="finding-meta mb-1">RECONNAISSANCE PROFILE</div>
+      <h2 class="mb-1">{{ report.target.hostname }}</h2>
+      <div class="finding-meta">
+        Resolved: {{ report.target.resolved_ips|join(', ') }}
+      </div>
+      <div class="finding-meta mt-1">Generated {{ report.generated_at }}</div>
+    </div>
+    {% if not is_pdf %}
+    <a class="btn btn-scan" href="{{ url_for('report_pdf', scan_id=report.scan_id) }}">Download PDF</a>
+    {% endif %}
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="panel p-3 text-center">
+        <div class="finding-meta mb-1">HIGH</div>
+        <div class="fs-3" style="color: var(--high)">{{ report.observation_counts.high }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="panel p-3 text-center">
+        <div class="finding-meta mb-1">MEDIUM</div>
+        <div class="fs-3" style="color: var(--medium)">{{ report.observation_counts.medium }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="panel p-3 text-center">
+        <div class="finding-meta mb-1">LOW</div>
+        <div class="fs-3" style="color: var(--low)">{{ report.observation_counts.low }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="panel p-3 text-center">
+        <div class="finding-meta mb-1">INFO</div>
+        <div class="fs-3" style="color: var(--info)">{{ report.observation_counts.info }}</div>
+      </div>
+    </div>
+  </div>
+
+  {% set whois = report.modules_by_name.get('whois') %}
+  <div class="category-heading">1. Domain &amp; Registration</div>
+  <div class="panel p-3 mb-3">
+    {% if whois and whois.status == 'success' %}
+    <table class="kv-table">
+      <tr><td>Registrar</td><td>{{ whois.data.registrar or '—' }}</td></tr>
+      <tr><td>Registrant Org</td><td>{{ whois.data.registrant_org or '— (likely privacy-protected)' }}</td></tr>
+      <tr><td>Created</td><td>{{ whois.data.creation_date or '—' }}</td></tr>
+      <tr><td>Expires</td><td>{{ whois.data.expiration_date or '—' }}</td></tr>
+      <tr><td>Updated</td><td>{{ whois.data.updated_date or '—' }}</td></tr>
+      <tr><td>Name Servers</td><td>{{ whois.data.name_servers|join(', ') if whois.data.name_servers else '—' }}</td></tr>
+    </table>
+    {% else %}
+    <div class="finding-meta module-status-error">{{ whois.error if whois else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set hosting = report.modules_by_name.get('hosting_info') %}
+  <div class="category-heading">2. Hosting &amp; Network</div>
+  <div class="panel p-3 mb-3">
+    {% if hosting and hosting.status == 'success' %}
+    <table class="kv-table">
+      <tr><td>IPv4 Address</td><td>{{ hosting.data.ipv4_address or '—' }}</td></tr>
+      <tr><td>IPv6 Address</td><td>{{ hosting.data.ipv6_address or 'Not Present' }}</td></tr>
+      <tr><td>Reverse DNS</td><td>{{ hosting.data.reverse_dns or '—' }}</td></tr>
+      <tr><td>Netblock Owner</td><td>{{ hosting.data.netblock_owner or '—' }}</td></tr>
+      <tr><td>Netblock (CIDR)</td><td>{{ hosting.data.netblock_cidr or '—' }}</td></tr>
+      <tr><td>Autonomous System</td><td>{{ 'AS' ~ hosting.data.asn if hosting.data.asn else '—' }}{{ ' — ' ~ hosting.data.asn_description if hosting.data.asn_description }}</td></tr>
+      <tr><td>Hosting Country</td><td>{{ hosting.data.hosting_country or '—' }}</td></tr>
+      <tr><td>Top Level Domain</td><td>{{ hosting.data.tld_category or '—' }}</td></tr>
+      <tr><td>DNS Security Extensions</td>
+        <td>{% if hosting.data.dnssec_enabled is none %}Unknown{% elif hosting.data.dnssec_enabled %}Enabled{% else %}Not enabled{% endif %}</td></tr>
+    </table>
+    {% else %}
+    <div class="finding-meta module-status-error">{{ hosting.error if hosting else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set dns = report.modules_by_name.get('dns_enum') %}
+  <div class="category-heading">3. DNS Infrastructure</div>
+  <div class="panel p-3 mb-3">
+    {% if dns and dns.status == 'success' %}
+    <table class="kv-table">
+      {% for rtype, values in dns.data.get('records', {}).items() %}
+      <tr><td>{{ rtype }}</td><td>{{ values|join(', ') if values else '—' }}</td></tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <div class="finding-meta module-status-error">{{ dns.error if dns else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set ssl = report.modules_by_name.get('ssl_inspector') %}
+  <div class="category-heading">4. TLS / Certificate Posture</div>
+  <div class="panel p-3 mb-3">
+    {% if ssl and ssl.status == 'success' and ssl.data.get('verified') %}
+    <table class="kv-table">
+      <tr><td>Issuer</td><td>{{ ssl.data.issuer or '—' }}</td></tr>
+      <tr><td>Subject CN</td><td>{{ ssl.data.subject_cn or '—' }}</td></tr>
+      <tr><td>Valid From</td><td>{{ ssl.data.not_before or '—' }}</td></tr>
+      <tr><td>Valid Until</td><td>{{ ssl.data.not_after or '—' }} ({{ ssl.data.days_until_expiry }} days)</td></tr>
+      <tr><td>SANs</td><td>{{ ssl.data.san_count }} name(s)</td></tr>
+      <tr><td>TLS Version</td><td>{{ ssl.data.tls_version or '—' }}</td></tr>
+      <tr><td>Cipher</td><td>{{ ssl.data.cipher or '—' }}</td></tr>
+    </table>
+    {% elif ssl and ssl.status == 'success' %}
+    <div class="finding-meta module-status-error">Certificate did not verify: {{ ssl.data.get('verify_error') }}</div>
+    {% else %}
+    <div class="finding-meta module-status-error">{{ ssl.error if ssl else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set http = report.modules_by_name.get('http_fingerprint') %}
+  <div class="category-heading">5. HTTP Surface</div>
+  <div class="panel p-3 mb-3">
+    {% if http and http.status == 'success' %}
+    <table class="kv-table">
+      <tr><td>Final URL</td><td>{{ http.data.final_url }}</td></tr>
+      <tr><td>Status</td><td>{{ http.data.status_code }}</td></tr>
+      <tr><td>Redirects</td><td>{{ http.data.redirect_chain|length }}</td></tr>
+      <tr><td>Server</td><td>{{ http.data.server or '—' }}</td></tr>
+      <tr><td>X-Powered-By</td><td>{{ http.data.x_powered_by or '—' }}</td></tr>
+      <tr><td>Cookies Set</td><td>{{ http.data.cookie_names|join(', ') if http.data.cookie_names else '—' }}</td></tr>
+    </table>
+    {% else %}
+    <div class="finding-meta module-status-error">{{ http.error if http else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set subs = report.modules_by_name.get('subdomain_enum') %}
+  <div class="category-heading">6. Discovered Subdomains</div>
+  <div class="panel p-3 mb-3">
+    {% if subs and subs.status == 'success' %}
+      {% if subs.data.subdomains %}
+        {% for s in subs.data.subdomains %}<span class="chip">{{ s }}</span>{% endfor %}
+      {% else %}
+        <div class="finding-meta">No subdomains discovered via certificate transparency logs or common-name lookup.</div>
+      {% endif %}
+    {% else %}
+    <div class="finding-meta module-status-error">{{ subs.error if subs else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set rs = report.modules_by_name.get('robots_sitemap') %}
+  <div class="category-heading">7. Crawl Surface (robots.txt / sitemap)</div>
+  <div class="panel p-3 mb-3">
+    {% if rs and rs.status == 'success' %}
+    <div class="finding-meta mb-2">robots.txt {{ 'found' if rs.data.robots.present else 'not found' }} ·
+      {{ rs.data.sitemap_url_count }} sitemap URL(s) discovered</div>
+    {% if rs.data.robots.disallowed_paths %}
+    <div class="mb-2">
+      {% for p in rs.data.robots.disallowed_paths[:20] %}<span class="chip">{{ p }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="finding-meta module-status-error">{{ rs.error if rs else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set tech = report.modules_by_name.get('tech_detection') %}
+  <div class="category-heading">8. Technology Stack</div>
+  <div class="panel p-3 mb-3">
+    {% if tech and tech.status == 'success' %}
+      {% if tech.data.meta_generator %}
+      <div class="finding-meta mb-2">Meta generator: {{ tech.data.meta_generator }}</div>
+      {% endif %}
+      {% if tech.data.detected %}
+        {% for t in tech.data.detected %}<span class="chip">{{ t.name }} <span class="finding-meta">({{ t.category }})</span></span>{% endfor %}
+      {% else %}
+      <div class="finding-meta">No signatures matched.</div>
+      {% endif %}
+    {% else %}
+    <div class="finding-meta module-status-error">{{ tech.error if tech else 'Module did not run.' }}</div>
+    {% endif %}
+  </div>
+
+  {% set ports = report.modules_by_name.get('port_scan') %}
+  {% if ports %}
+  <div class="category-heading">9. Open Ports (authorized scan)</div>
+  <div class="panel p-3 mb-3">
+    {% if ports.status == 'success' %}
+      {% if ports.data.open_ports %}
+        {% for p in ports.data.open_ports %}<span class="chip warn">{{ p.port }}/{{ p.service }}</span>{% endfor %}
+      {% else %}
+      <div class="finding-meta">No open ports found among: {{ ports.data.scanned_ports|join(', ') }}</div>
+      {% endif %}
+    {% else %}
+    <div class="finding-meta module-status-error">{{ ports.error }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <div class="category-heading">10. Observations</div>
+  {% if report.observation_counts.high == 0 and report.observation_counts.medium == 0
+        and report.observation_counts.low == 0 %}
+  <div class="panel p-4 mb-5">No notable observations from this scan.</div>
+  {% else %}
+  <div class="mb-5">
+    {% for category, findings in report.observations_by_category.items() %}
+      {% for f in findings %}
+      <div class="finding-card {{ f.severity }}">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div class="finding-title">{{ f.title }}</div>
+          <span class="sev-pill sev-{{ f.severity }}">{{ f.severity }}</span>
+        </div>
+        <div class="mt-2">{{ f.detail }}</div>
+        <div class="finding-meta mt-2">{{ f.category }}</div>
+      </div>
+      {% endfor %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

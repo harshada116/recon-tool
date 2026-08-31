@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Web Application Recon Tool{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="hero">
+    <h1>Build a reconnaissance profile.</h1>
+    <p class="lede">
+      Enter a domain or URL to collect publicly available information: WHOIS,
+      DNS records, TLS certificate posture, HTTP fingerprint, discovered
+      subdomains, robots.txt/sitemap, and detected technologies. This is
+      passive information gathering, not exploitation.
+    </p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      {% if error %}
+      <div class="error-box mb-4">{{ error }}</div>
+      {% endif %}
+
+      <form class="scan-form" method="POST" action="{{ url_for('scan') }}">
+        <label for="target" class="form-label finding-meta">TARGET DOMAIN OR URL</label>
+        <div class="d-flex gap-2 flex-column flex-sm-row mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="target"
+            name="target"
+            placeholder="example.com"
+            value="{{ submitted_target or '' }}"
+            required
+            autofocus
+          >
+          <button type="submit" class="btn btn-scan">Start Recon</button>
+        </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="port_scan" name="port_scan" value="1">
+          <label class="form-check-label" for="port_scan">
+            Also run an authorized open-port scan (fixed common ports only)
+          </label>
+        </div>
+
+        <div id="authorize-box" class="authorize-box" style="display:none;">
+          <label class="form-check-label" for="authorize_confirm">
+            Port scanning must only be performed against systems you own or
+            are explicitly authorized to test. Type the target domain again
+            to confirm you have authorization:
+          </label>
+          <input type="text" class="form-control mt-2" id="authorize_confirm"
+                 name="authorize_confirm" placeholder="Re-type the domain to confirm">
+        </div>
+      </form>
+
+      <div class="mt-4 finding-meta">
+        Only scans publicly reachable targets. Private/internal addresses are blocked.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
